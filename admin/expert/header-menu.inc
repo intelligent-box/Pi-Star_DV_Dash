@@ -27,6 +27,7 @@
     <a href="fulledit_bmapikey.php" style="color: #ffffff;">BM API</a> |
     <a href="fulledit_dapnetapi.php" style="color: #ffffff;">DAPNET API</a> |
     <a href="fulledit_cron.php" style="color: #ffffff;">System Cron</a> |
+    <a href="ssl.php" style="color: #ffffff;">SSL</a> |
     <a href="fulledit_rssidat.php" style="color: #ffffff;">RSSI Dat</a>
     &emsp;<b>Tools:</b>
     <a href="edit_dashboard.php" style="color: #ffffff;">CSS Tool</a> |
