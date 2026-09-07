@@ -265,27 +265,22 @@ $renewalMonthsValue = (int)$sslState['renewal_months'];
   <table width="100%">
     <tr><th>SSL Certificate Manager</th></tr>
     <tr><td align="left">
-      <h2 style="margin: 0 0 10px 0;">SSL Certificate Manager</h2>
       <p><strong>SSL status:</strong> <?php echo $sslStatus; ?></p>
       <p><strong>Certificate present:</strong> <?php echo $sslState['certificate_exists'] ? 'Yes' : 'No'; ?></p>
       <p><strong>Auto-renew schedule:</strong> <?php echo $sslState['renewal_installed'] ? 'Installed' : 'Not installed'; ?></p>
       <p>This page manages the instance HTTPS certificate. When SSL is enabled, the certificate is generated and the renewal protection is installed in the same operation so the dashboard cannot be left without a safe renewal path.</p>
       <?php if (!empty($saveMsg)) { echo '<div style="background-color: #c0f0c0; color: #106010; padding: 10px; margin: 0 0 10px 0;">' . htmlspecialchars($saveMsg, ENT_QUOTES, 'UTF-8') . '</div>'; } ?>
       <?php if (!empty($saveErr)) { echo '<div style="background-color: #f8d7da; color: #7f1d1d; padding: 10px; margin: 0 0 10px 0;">' . $saveErr . '</div>'; } ?>
-      <form name="sslSettings" method="post" action="" onsubmit="return validateSslForm(this);" style="margin: 12px 0 0 0; padding: 0;">
+      <form name="sslSettings" method="post" action="" onsubmit="return validateSslForm(this);">
         <?php csrf_field(); ?>
-        <div style="margin-bottom: 12px;">
-          <label><input type="checkbox" name="ssl_enable" value="ON"<?php echo $sslChecked; ?> /> Enable SSL</label>
-        </div>
-        <div style="margin-bottom: 12px;">
-          <label for="ssl_renew_months" style="display: inline-block; width: 170px;">Auto-renew interval (1-11 months):</label>
-          <input type="number" id="ssl_renew_months" name="ssl_renew_months" min="1" max="11" size="2" maxlength="2" value="<?php echo $renewalMonthsValue; ?>" style="width: 70px; border: 1px solid #888;" />
-          <div id="sslRenewError" style="color: #b22222; font-weight: bold; display: none; margin-top: 6px;">Auto-renew interval must be between 1 and 11 months when SSL is enabled.</div>
-        </div>
-        <div style="margin-top: 8px;">
-          <input type="submit" name="ssl_apply" value="Apply" />
-          <input type="submit" name="ssl_renew_now" value="Renew Now" />
-        </div>
+        <label><input type="checkbox" name="ssl_enable" value="ON"<?php echo $sslChecked; ?> /> Enable SSL</label><br />
+        <br />
+        <label for="ssl_renew_months">Auto-renew interval (1-11 months):</label><br />
+        <input type="number" id="ssl_renew_months" name="ssl_renew_months" min="1" max="11" size="2" maxlength="2" value="<?php echo $renewalMonthsValue; ?>" />
+        <div id="sslRenewError" style="color: #b22222; font-weight: bold; display: none; margin-top: 6px;">Auto-renew interval must be between 1 and 11 months when SSL is enabled.</div>
+        <br />
+        <input type="submit" name="ssl_apply" value="Apply" />
+        <input type="submit" name="ssl_renew_now" value="Renew Now" />
       </form>
       <script type="text/javascript">
         function validateSslForm(form)
