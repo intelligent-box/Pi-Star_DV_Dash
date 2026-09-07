@@ -252,6 +252,19 @@ if (file_exists($sslConfigPath)) {
         $sslConfig = $parsedSslConfig;
     }
 }
+$sslConfig['SSL'] = array(
+    'status' => $sslStatus,
+    'certificate_present' => $sslState['certificate_exists'] ? 'Yes' : 'No',
+    'renewal_schedule' => $sslState['renewal_installed'] ? 'Installed' : 'Not installed',
+) + (isset($sslConfig['SSL']) ? $sslConfig['SSL'] : array());
+$sslReadOnlyKeys = array('status', 'certificate_present', 'renewal_schedule');
+$sslFieldLabels = array(
+    'status' => 'SSL status',
+    'certificate_present' => 'Certificate present',
+    'renewal_schedule' => 'Auto-renew schedule',
+    'enabled' => 'Enable SSL',
+    'renewal_months' => 'Auto-renew interval (1-11 months)',
+);
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
 "http://www.w3.org/TR/xhtml1/DTD XHTML 1.0 Transitional//EN">
@@ -286,18 +299,18 @@ if (file_exists($sslConfigPath)) {
 <input type="hidden" value="<?php echo $sectionHtml; ?>" name="<?php echo $sectionHtml; ?>" />
 <table>
 <tr><th colspan="2">SSL Certificate Manager</th></tr>
-<tr><td align="right" width="30%">SSL status</td><td align="left"><?php echo htmlspecialchars($sslStatus, ENT_QUOTES, 'UTF-8'); ?></td></tr>
-<tr><td align="right" width="30%">Certificate present</td><td align="left"><?php echo $sslState['certificate_exists'] ? 'Yes' : 'No'; ?></td></tr>
-<tr><td align="right" width="30%">Auto-renew schedule</td><td align="left"><?php echo $sslState['renewal_installed'] ? 'Installed' : 'Not installed'; ?></td></tr>
 <?php foreach ($values as $key => $value) : ?>
 <?php
 $keyHtml = htmlspecialchars((string)$key, ENT_QUOTES, 'UTF-8');
 $valueHtml = htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+$labelHtml = htmlspecialchars(isset($sslFieldLabels[$key]) ? $sslFieldLabels[$key] : (string)$key, ENT_QUOTES, 'UTF-8');
 ?>
 <tr>
-<td align="right" width="30%"><?php echo $keyHtml; ?></td>
+<td align="right" width="30%"><?php echo $labelHtml; ?></td>
 <td align="left">
-<?php if ($key === 'enabled') : ?>
+<?php if (in_array($key, $sslReadOnlyKeys, true)) : ?>
+<?php echo $valueHtml; ?>
+<?php elseif ($key === 'enabled') : ?>
 <input type="hidden" name="<?php echo $sectionHtml; ?>[<?php echo $keyHtml; ?>]" value="0" />
 <input type="checkbox" id="ssl_enabled" name="<?php echo $sectionHtml; ?>[<?php echo $keyHtml; ?>]" value="1"<?php echo ((string)$value === '1') ? ' checked="checked"' : ''; ?> onchange="refreshSslRenewValidation();" />
 <?php elseif ($key === 'renewal_months') : ?>
