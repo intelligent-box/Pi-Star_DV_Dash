@@ -309,7 +309,7 @@ $labelHtml = htmlspecialchars(isset($sslFieldLabels[$key]) ? $sslFieldLabels[$ke
 <td align="right" width="30%"><?php echo $labelHtml; ?></td>
 <td align="left">
 <?php if (in_array($key, $sslReadOnlyKeys, true)) : ?>
-<?php echo $valueHtml; ?>
+<input type="text" value="<?php echo $valueHtml; ?>" readonly="readonly" />
 <?php elseif ($key === 'enabled') : ?>
 <input type="hidden" name="<?php echo $sectionHtml; ?>[<?php echo $keyHtml; ?>]" value="0" />
 <input type="checkbox" id="ssl_enabled" name="<?php echo $sectionHtml; ?>[<?php echo $keyHtml; ?>]" value="1"<?php echo ((string)$value === '1') ? ' checked="checked"' : ''; ?> onchange="refreshSslRenewValidation();" />
@@ -321,8 +321,8 @@ $labelHtml = htmlspecialchars(isset($sslFieldLabels[$key]) ? $sslFieldLabels[$ke
 </td>
 </tr>
 <?php endforeach; ?>
-<tr><td colspan="2"><div id="sslRenewError" style="color: #b22222; font-weight: bold; display: none; margin-top: 6px;">Auto-renew interval must be between 1 and 11 months when SSL is enabled.</div></td></tr>
 </table>
+<div id="sslRenewError" style="color: #b22222; font-weight: bold; display: none; margin-top: 6px;">Auto-renew interval must be between 1 and 11 months when SSL is enabled.</div>
 <input type="submit" name="ssl_apply" value="<?php echo $lang['apply']; ?>" />
 <input type="submit" name="ssl_renew_now" value="Renew Now" />
 <?php endforeach; ?>
