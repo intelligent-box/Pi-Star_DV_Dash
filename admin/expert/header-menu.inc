@@ -27,12 +27,13 @@
     <a href="fulledit_bmapikey.php" style="color: #ffffff;">BM API</a> |
     <a href="fulledit_dapnetapi.php" style="color: #ffffff;">DAPNET API</a> |
     <a href="fulledit_cron.php" style="color: #ffffff;">System Cron</a> |
-    <a href="ssl.php" style="color: #ffffff;">SSL</a> |
+    <a href="fulledit_ssl.php" style="color: #ffffff;">SSL</a> |
     <a href="fulledit_rssidat.php" style="color: #ffffff;">RSSI Dat</a>
     &emsp;<b>Tools:</b>
     <a href="edit_dashboard.php" style="color: #ffffff;">CSS Tool</a> |
     <a href="modem_fw_upgrade.php" style="color: #ffffff;">FW</a> |
-    <a href="ssh_access.php" style="color: #ffffff;">SSH Access</a>
+    <a href="ssh_access.php" style="color: #ffffff;">SSH Access</a> |
+    <a href="favicon_manager.php" style="color: #ffffff;">Favicon</a>
   </p>
   </div>
 
