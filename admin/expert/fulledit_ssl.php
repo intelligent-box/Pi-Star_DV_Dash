@@ -120,7 +120,7 @@ function pistar_ssl_force_renew()
     $script = '/usr/local/sbin/pistar-sslgenerate';
 
     if (file_exists($script)) {
-        exec('sudo ' . escapeshellarg($script) . ' force > /dev/null 2>&1 &');
+        exec('sudo ' . escapeshellarg($script) . ' force > /dev/null 2>&1');
         return;
     }
 
@@ -229,9 +229,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (isset($_POST['ssl_renew_now'])) {
-        pistar_ssl_force_renew();
-        $saveMsg = 'Renew now requested. The certificate regeneration has been queued.';
-        $sslState = pistar_ssl_read_state();
+        if (!$sslState['enabled']) {
+            $saveErr = 'Cannot renew certificate. SSL is not enabled.';
+        } else {
+            pistar_ssl_force_renew();
+            $saveMsg = 'Certificate renewal completed successfully.';
+            $sslState = pistar_ssl_read_state();
+        }
     }
 }
 
