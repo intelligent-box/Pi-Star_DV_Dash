@@ -106,13 +106,15 @@ function pistar_ssl_ensure_certificate()
     $keyPath = '/etc/ssl/private/pi-star.key';
     $script = '/usr/local/sbin/pistar-sslgenerate';
 
-    if (file_exists($script)) {
-        exec('sudo ' . escapeshellarg($script) . ' > /dev/null 2>&1 &');
+    if (file_exists($certPath) && file_exists($keyPath)) {
         return;
     }
 
-    if (file_exists($certPath)) {
-        return;
+    if (file_exists($script)) {
+        exec('sudo ' . escapeshellarg($script) . ' > /dev/null 2>&1');
+        if (file_exists($certPath) && file_exists($keyPath)) {
+            return;
+        }
     }
 
     exec('sudo mount -o remount,rw /');
