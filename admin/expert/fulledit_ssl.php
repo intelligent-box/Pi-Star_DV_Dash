@@ -276,10 +276,6 @@ if (file_exists($sslConfigPath)) {
 <div class="container">
 <?php include './header-menu.inc'; ?>
 <div class="contentwide">
-  <h2>SSL Certificate Manager</h2>
-  <p><strong>SSL status:</strong> <?php echo $sslStatus; ?></p>
-  <p><strong>Certificate present:</strong> <?php echo $sslState['certificate_exists'] ? 'Yes' : 'No'; ?></p>
-  <p><strong>Auto-renew schedule:</strong> <?php echo $sslState['renewal_installed'] ? 'Installed' : 'Not installed'; ?></p>
   <p>This page manages the instance HTTPS certificate. When SSL is enabled, the certificate is generated and the renewal protection is installed in the same operation so the dashboard cannot be left without a safe renewal path.</p>
   <?php if (!empty($saveMsg)) { echo '<div style="background-color: #c0f0c0; color: #106010; padding: 10px; margin: 10px 0;">' . htmlspecialchars($saveMsg, ENT_QUOTES, 'UTF-8') . '</div>'; } ?>
   <?php if (!empty($saveErr)) { echo '<div style="background-color: #f8d7da; color: #7f1d1d; padding: 10px; margin: 10px 0;">' . $saveErr . '</div>'; } ?>
@@ -289,7 +285,10 @@ if (file_exists($sslConfigPath)) {
 <?php $sectionHtml = htmlspecialchars((string)$section, ENT_QUOTES, 'UTF-8'); ?>
 <input type="hidden" value="<?php echo $sectionHtml; ?>" name="<?php echo $sectionHtml; ?>" />
 <table>
-<tr><th colspan="2"><?php echo $sectionHtml; ?></th></tr>
+<tr><th colspan="2">SSL Certificate Manager</th></tr>
+<tr><td align="right" width="30%">SSL status</td><td align="left"><?php echo htmlspecialchars($sslStatus, ENT_QUOTES, 'UTF-8'); ?></td></tr>
+<tr><td align="right" width="30%">Certificate present</td><td align="left"><?php echo $sslState['certificate_exists'] ? 'Yes' : 'No'; ?></td></tr>
+<tr><td align="right" width="30%">Auto-renew schedule</td><td align="left"><?php echo $sslState['renewal_installed'] ? 'Installed' : 'Not installed'; ?></td></tr>
 <?php foreach ($values as $key => $value) : ?>
 <?php
 $keyHtml = htmlspecialchars((string)$key, ENT_QUOTES, 'UTF-8');
@@ -312,7 +311,6 @@ $valueHtml = htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
 <tr><td colspan="2"><div id="sslRenewError" style="color: #b22222; font-weight: bold; display: none; margin-top: 6px;">Auto-renew interval must be between 1 and 11 months when SSL is enabled.</div></td></tr>
 </table>
 <input type="submit" name="ssl_apply" value="<?php echo $lang['apply']; ?>" />
-<br />
 <input type="submit" name="ssl_renew_now" value="Renew Now" />
 <?php endforeach; ?>
 </form>
