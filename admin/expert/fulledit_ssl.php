@@ -110,14 +110,16 @@ function pistar_ssl_ensure_certificate()
         return;
     }
 
+    exec('sudo mount -o remount,rw /');
+
     if (file_exists($script)) {
         exec('sudo ' . escapeshellarg($script) . ' > /dev/null 2>&1');
         if (file_exists($certPath) && file_exists($keyPath)) {
+            exec('sudo mount -o remount,ro /');
             return;
         }
     }
 
-    exec('sudo mount -o remount,rw /');
     exec('sudo mkdir -p /etc/ssl/certs /etc/ssl/private > /dev/null 2>&1');
     exec('sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 '
         . '-keyout ' . escapeshellarg($keyPath)
@@ -131,7 +133,9 @@ function pistar_ssl_force_renew()
     $script = '/usr/local/sbin/pistar-sslgenerate';
 
     if (file_exists($script)) {
+        exec('sudo mount -o remount,rw /');
         exec('sudo ' . escapeshellarg($script) . ' force > /dev/null 2>&1');
+        exec('sudo mount -o remount,ro /');
         return;
     }
 
@@ -164,7 +168,9 @@ function pistar_ssl_ensure_renewal_schedule()
         . "if [ -x /usr/local/sbin/pistar-sslgenerate ]; then\n"
         . "  CERT_FILE=/etc/ssl/certs/pi-star.crt\n"
         . "  if [ ! -f \"$CERT_FILE\" ]; then\n"
+        . "    /bin/mount -o remount,rw /\n"
         . "    /usr/local/sbin/pistar-sslgenerate force >/dev/null 2>&1 || true\n"
+        . "    /bin/mount -o remount,ro /\n"
         . "    exit 0\n"
         . "  fi\n"
         . "  NOW=\"$(date +%s)\"\n"
@@ -172,7 +178,9 @@ function pistar_ssl_ensure_renewal_schedule()
         . "  if [ \"$CERT_AGE\" -lt \"$((RENEW_MONTHS * 30 * 24 * 60 * 60))\" ]; then\n"
         . "    exit 0\n"
         . "  fi\n"
+        . "  /bin/mount -o remount,rw /\n"
         . "  /usr/local/sbin/pistar-sslgenerate force >/dev/null 2>&1 || true\n"
+        . "  /bin/mount -o remount,ro /\n"
         . "fi\n";
 
     $tmp = tempnam('/tmp', 'pistar-ssl-renew-');
