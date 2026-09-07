@@ -78,14 +78,23 @@ function pistar_ssl_write_state($enabled, $renewalMonths)
         return array('Could not write the SSL state file to the temporary staging area.');
     }
 
-    exec('sudo mount -o remount,rw /');
+    $remountOutput = array();
+    $remountRc = 0;
+    exec('sudo mount -o remount,rw / 2>&1', $remountOutput, $remountRc);
+    if ($remountRc !== 0) {
+        unlink($tmp);
+        return array('Could not make the root filesystem writable: ' . htmlspecialchars(implode(' ', $remountOutput), ENT_QUOTES, 'UTF-8'));
+    }
+
     $installRc = 0;
-    exec('sudo install -m 644 -o root -g root ' . escapeshellarg($tmp) . ' ' . escapeshellarg($stateFile), $out, $installRc);
-    exec('sudo mount -o remount,ro /');
+    $installOutput = array();
+    exec('sudo install -m 644 -o root -g root ' . escapeshellarg($tmp) . ' ' . escapeshellarg($stateFile) . ' 2>&1', $installOutput, $installRc);
+    exec('sudo mount -o remount,ro / 2>&1');
     unlink($tmp);
 
     if ($installRc !== 0) {
-        return array('Could not install the SSL state file into /etc.');
+        $detail = implode(' ', $installOutput);
+        return array('Could not install the SSL state file into /etc' . ($detail !== '' ? ': ' . htmlspecialchars($detail, ENT_QUOTES, 'UTF-8') : '.'));
     }
 
     return array();
