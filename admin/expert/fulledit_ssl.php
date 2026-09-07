@@ -205,8 +205,9 @@ $saveErr = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['ssl_apply'])) {
-        $enableSsl = (isset($_POST['ssl_enable']) && $_POST['ssl_enable'] === 'ON');
-        $renewalMonths = isset($_POST['ssl_renew_months']) ? (int)$_POST['ssl_renew_months'] : 11;
+        $postedSsl = isset($_POST['SSL']) && is_array($_POST['SSL']) ? $_POST['SSL'] : array();
+        $enableSsl = isset($postedSsl['enabled']) && $postedSsl['enabled'] === '1';
+        $renewalMonths = isset($postedSsl['renewal_months']) ? (int)$postedSsl['renewal_months'] : 11;
 
         if ($enableSsl && ($renewalMonths < 1 || $renewalMonths > 11)) {
             $saveErr = 'Auto-renew interval must be between 1 and 11 months when SSL is enabled.';
@@ -239,9 +240,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$sslChecked = $sslState['enabled'] ? ' checked="checked"' : '';
 $sslStatus = $sslState['enabled'] ? 'Enabled' : 'Disabled';
-$renewalMonthsValue = (int)$sslState['renewal_months'];
+$sslConfigPath = pistar_ssl_state_file_path();
+$sslConfig = array('SSL' => array(
+    'enabled' => $sslState['enabled'] ? '1' : '0',
+    'renewal_months' => (string)$sslState['renewal_months'],
+));
+if (file_exists($sslConfigPath)) {
+    $parsedSslConfig = @parse_ini_file($sslConfigPath, true);
+    if (is_array($parsedSslConfig) && isset($parsedSslConfig['SSL'])) {
+        $sslConfig = $parsedSslConfig;
+    }
+}
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
 "http://www.w3.org/TR/xhtml1/DTD XHTML 1.0 Transitional//EN">
@@ -266,30 +276,50 @@ $renewalMonthsValue = (int)$sslState['renewal_months'];
 <div class="container">
 <?php include './header-menu.inc'; ?>
 <div class="contentwide">
-  <table width="100%">
-    <tr><th>SSL Certificate Manager</th></tr>
-    <tr><td align="left">
-      <p><strong>SSL status:</strong> <?php echo $sslStatus; ?></p>
-      <p><strong>Certificate present:</strong> <?php echo $sslState['certificate_exists'] ? 'Yes' : 'No'; ?></p>
-      <p><strong>Auto-renew schedule:</strong> <?php echo $sslState['renewal_installed'] ? 'Installed' : 'Not installed'; ?></p>
-      <p>This page manages the instance HTTPS certificate. When SSL is enabled, the certificate is generated and the renewal protection is installed in the same operation so the dashboard cannot be left without a safe renewal path.</p>
-      <?php if (!empty($saveMsg)) { echo '<div style="background-color: #c0f0c0; color: #106010; padding: 10px; margin: 0 0 10px 0;">' . htmlspecialchars($saveMsg, ENT_QUOTES, 'UTF-8') . '</div>'; } ?>
-      <?php if (!empty($saveErr)) { echo '<div style="background-color: #f8d7da; color: #7f1d1d; padding: 10px; margin: 0 0 10px 0;">' . $saveErr . '</div>'; } ?>
-      <form name="sslSettings" method="post" action="" onsubmit="return validateSslForm(this);">
-        <?php csrf_field(); ?>
-        <label><input type="checkbox" name="ssl_enable" value="ON"<?php echo $sslChecked; ?> /> Enable SSL</label><br />
-        <br />
-        <label for="ssl_renew_months">Auto-renew interval (1-11 months):</label><br />
-        <input type="number" id="ssl_renew_months" name="ssl_renew_months" min="1" max="11" size="2" maxlength="2" value="<?php echo $renewalMonthsValue; ?>" />
-        <div id="sslRenewError" style="color: #b22222; font-weight: bold; display: none; margin-top: 6px;">Auto-renew interval must be between 1 and 11 months when SSL is enabled.</div>
-        <br />
-        <input type="submit" name="ssl_apply" value="Apply" />
-        <input type="submit" name="ssl_renew_now" value="Renew Now" />
-      </form>
+  <h2>SSL Certificate Manager</h2>
+  <p><strong>SSL status:</strong> <?php echo $sslStatus; ?></p>
+  <p><strong>Certificate present:</strong> <?php echo $sslState['certificate_exists'] ? 'Yes' : 'No'; ?></p>
+  <p><strong>Auto-renew schedule:</strong> <?php echo $sslState['renewal_installed'] ? 'Installed' : 'Not installed'; ?></p>
+  <p>This page manages the instance HTTPS certificate. When SSL is enabled, the certificate is generated and the renewal protection is installed in the same operation so the dashboard cannot be left without a safe renewal path.</p>
+  <?php if (!empty($saveMsg)) { echo '<div style="background-color: #c0f0c0; color: #106010; padding: 10px; margin: 10px 0;">' . htmlspecialchars($saveMsg, ENT_QUOTES, 'UTF-8') . '</div>'; } ?>
+  <?php if (!empty($saveErr)) { echo '<div style="background-color: #f8d7da; color: #7f1d1d; padding: 10px; margin: 10px 0;">' . $saveErr . '</div>'; } ?>
+<form name="sslSettings" action="" method="post" onsubmit="return validateSslForm(this);">
+<?php echo csrf_field_html(); ?>
+<?php foreach ($sslConfig as $section => $values) : ?>
+<?php $sectionHtml = htmlspecialchars((string)$section, ENT_QUOTES, 'UTF-8'); ?>
+<input type="hidden" value="<?php echo $sectionHtml; ?>" name="<?php echo $sectionHtml; ?>" />
+<table>
+<tr><th colspan="2"><?php echo $sectionHtml; ?></th></tr>
+<?php foreach ($values as $key => $value) : ?>
+<?php
+$keyHtml = htmlspecialchars((string)$key, ENT_QUOTES, 'UTF-8');
+$valueHtml = htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+?>
+<tr>
+<td align="right" width="30%"><?php echo $keyHtml; ?></td>
+<td align="left">
+<?php if ($key === 'enabled') : ?>
+<input type="hidden" name="<?php echo $sectionHtml; ?>[<?php echo $keyHtml; ?>]" value="0" />
+<input type="checkbox" id="ssl_enabled" name="<?php echo $sectionHtml; ?>[<?php echo $keyHtml; ?>]" value="1"<?php echo ((string)$value === '1') ? ' checked="checked"' : ''; ?> onchange="refreshSslRenewValidation();" />
+<?php elseif ($key === 'renewal_months') : ?>
+<input type="number" id="ssl_renew_months" name="<?php echo $sectionHtml; ?>[<?php echo $keyHtml; ?>]" min="1" max="11" size="2" maxlength="2" value="<?php echo $valueHtml; ?>" />
+<?php else : ?>
+<input type="text" name="<?php echo $sectionHtml; ?>[<?php echo $keyHtml; ?>]" value="<?php echo $valueHtml; ?>" />
+<?php endif; ?>
+</td>
+</tr>
+<?php endforeach; ?>
+<tr><td colspan="2"><div id="sslRenewError" style="color: #b22222; font-weight: bold; display: none; margin-top: 6px;">Auto-renew interval must be between 1 and 11 months when SSL is enabled.</div></td></tr>
+</table>
+<input type="submit" name="ssl_apply" value="<?php echo $lang['apply']; ?>" />
+<br />
+<input type="submit" name="ssl_renew_now" value="Renew Now" />
+<?php endforeach; ?>
+</form>
       <script type="text/javascript">
         function validateSslForm(form)
         {
-            var sslEnabled = form.elements['ssl_enable'] && form.elements['ssl_enable'].checked;
+            var sslEnabled = document.getElementById('ssl_enabled') && document.getElementById('ssl_enabled').checked;
             var renewField = document.getElementById('ssl_renew_months');
             var renewError = document.getElementById('sslRenewError');
             var value = parseInt(renewField.value, 10);
@@ -312,7 +342,7 @@ $renewalMonthsValue = (int)$sslState['renewal_months'];
             var renewField = document.getElementById('ssl_renew_months');
             var renewError = document.getElementById('sslRenewError');
             var value = parseInt(renewField.value, 10);
-            var sslEnabled = document.forms['sslSettings'] && document.forms['sslSettings'].elements['ssl_enable'] && document.forms['sslSettings'].elements['ssl_enable'].checked;
+            var sslEnabled = document.getElementById('ssl_enabled') && document.getElementById('ssl_enabled').checked;
             var hasError = sslEnabled && (isNaN(value) || value < 1 || value > 11);
 
             renewField.style.border = hasError ? '2px solid #b22222' : '1px solid #888';
@@ -331,9 +361,6 @@ $renewalMonthsValue = (int)$sslState['renewal_months'];
             }
         })();
       </script>
-    </td></tr>
-  </table>
-</div>
 
 <div class="footer">
 Pi-Star / Pi-Star Dashboard, &copy; Andy Taylor (MW0MWZ) 2014-<?php echo date("Y"); ?>.<br />
